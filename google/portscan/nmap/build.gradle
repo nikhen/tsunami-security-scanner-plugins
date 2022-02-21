@@ -7,11 +7,25 @@ group = 'com.google.tsunami'
 version = '0.0.1-SNAPSHOT'
 
 repositories {
+    flatDir {
+        dirs '/usr/local/google/home/***/tsunami/repos/tsunami-security-scanner/proto/build/libs/'
+    }
     maven { // The google mirror is less flaky than mavenCentral()
         url 'https://maven-central.storage-download.googleapis.com/repos/central/data/'
+        content {
+            excludeModuleByRegex '.*google.*', '.*tsunami.*proto.*'
+        }
     }
-    mavenCentral()
-    mavenLocal()
+    mavenCentral {
+        content {
+            excludeModuleByRegex '.*google.*', '.*tsunami.*proto.*'
+        }
+    }
+    mavenLocal {
+        content {
+            excludeModuleByRegex '.*google.*', '.*tsunami.*proto.*'
+        }
+    }
 }
 
 java {

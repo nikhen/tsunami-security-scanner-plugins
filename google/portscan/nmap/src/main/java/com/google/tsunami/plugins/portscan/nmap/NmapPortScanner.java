@@ -33,6 +33,7 @@ import com.google.tsunami.plugins.portscan.nmap.client.NmapClient.DnsResolution;
 import com.google.tsunami.plugins.portscan.nmap.client.NmapClient.ScanTechnique;
 import com.google.tsunami.plugins.portscan.nmap.client.NmapClient.TimingTemplate;
 import com.google.tsunami.plugins.portscan.nmap.client.result.Address;
+import com.google.tsunami.plugins.portscan.nmap.client.result.Cpe;
 import com.google.tsunami.plugins.portscan.nmap.client.result.Host;
 import com.google.tsunami.plugins.portscan.nmap.client.result.Hostname;
 import com.google.tsunami.plugins.portscan.nmap.client.result.NmapRun;
@@ -249,6 +250,25 @@ public final class NmapPortScanner implements PortScanner {
               .setWebServiceContext(WebServiceContext.newBuilder().setApplicationRoot(rootPath)));
     }
 
+    Optional<Cpe> cpe = getCpeFromPort(port);
+    if (cpe.isPresent()) {
+      networkServiceBuilder.setCpe(cpe.get().value());
+      // beginning Optional stuff for debugging
+      Optional<Address> addr = getAddressFromHost(host);
+      System.out.printf("\n\n Host: ");
+      if (addr.isPresent()) {
+        System.out.printf(addr.get().addr());
+      }
+      System.out.printf("\n Protocol: ");
+      System.out.printf(getTransportProtocolFromPort(port).toString());
+      System.out.printf("\n Port: ");
+      System.out.printf(port.portId());
+      System.out.printf("\n CPE: ");
+      System.out.print(cpe.get().value());
+      System.out.printf("\n\n");
+      // end Optional stuff for debugging
+    }
+
     getServiceNameFromPort(port).ifPresent(networkServiceBuilder::setServiceName);
     getSoftwareFromPort(port).ifPresent(networkServiceBuilder::setSoftware);
     getSoftwareVersionSetFromPort(port).ifPresent(networkServiceBuilder::setVersionSet);
@@ -261,6 +281,25 @@ public final class NmapPortScanner implements PortScanner {
     return port.scripts().stream()
         .filter(script -> Ascii.equalsIgnoreCase("banner", Strings.nullToEmpty(script.id())))
         .findFirst();
+  }
+
+  private static Optional<Cpe> getCpeFromPort(Port port) {
+    //System.out.printf("Getting CPE from Port ");
+    return port.service().cpes().stream().findFirst();
+    /*forEach(
+            cpe -> {
+                System.out.printf(cpe.value());
+                if (!Strings.isNullOrEmpty(cpe.value())) {
+                  System.out.printf("\n\n");
+                  System.out.printf(port.portId());
+                  System.out.printf(cpe.value());
+                  if (Strings.isNullOrEmpty(cpevalue)) {
+                    cpevalue = cpe.value();
+                  }
+                  System.out.printf("\n\n");
+                }
+            });
+            return cpevalue*/
   }
 
   private static Optional<Host> getHostFromNmapRun(NmapRun nmapRun) {
